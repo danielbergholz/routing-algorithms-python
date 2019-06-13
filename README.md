@@ -1,4 +1,4 @@
-# Trabalho Final - Algoritmo e Estrutura de Dados
+# Trabalho Final - Fundamentos de Redes 1
 
 ## Integrantes da equipe:
 * Daniel Gobbi Bergholz 16/0004551
