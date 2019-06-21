@@ -1,0 +1,6 @@
+graph g {
+    v0 -- v1 [label=0.3];
+    v1 -- v2 [label=1.5];
+    v2 -- v3 [label=3.8];
+    v3 -- v4 [label=1.7];
+}
