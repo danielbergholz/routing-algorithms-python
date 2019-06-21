@@ -164,6 +164,7 @@ def dijkstra():
     predecessor = {}
     custo = {}
     menor_custo = {}
+    adjacentes = {}
 
     # mensagem de boas vindas / relembrar quais vertices existem no grafo
     print '\nVoce selecionou o algoritmo de DIJKSTRA\nA seguir o nome dos vertices do seu grafo:\nV = {',
@@ -173,10 +174,11 @@ def dijkstra():
         else:
             print vertices[i] + ' }'
 
-    # loop para selecionar vertice raiz
+    # loop para selecionar vertice raiz e destino
     while True:
         no_inicial = raw_input('Qual sera o seu no inicial(Raiz)?\n')
-        if (no_inicial not in vertices):
+        no_final = raw_input('E o seu no final?\n')
+        if ((no_inicial not in vertices) or (no_final not in vertices)):
             print 'Por favor, digite um vertice que realmente exista no grafo\nA seguir os vertices do seu grafo:\nV = {',
             for i in range(len(vertices)):
                 if (i < len(vertices)-1):
@@ -194,7 +196,19 @@ def dijkstra():
         custo[arestas[i]] = pesos[i]
 
     # descobrir os vizinhos do vertice raiz
+    aux = []
+    for i in range(len(arestas)):
+        for j in range(2):
+            if(arestas[i][j] == no_inicial):
+                if(j == 1):
+                    predecessor[arestas[i][0]] = no_inicial
+                    aux.append(arestas[i][0])
+                elif (j == 0):
+                    aux.append(arestas[i][1])
+                    predecessor[arestas[i][1]] = no_inicial
+    adjacentes[no_inicial] = aux
 
+    print adjacentes
 
 
 #g.vcount()
