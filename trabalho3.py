@@ -90,7 +90,6 @@ def ler_dot():
 
     # agora iremos adicionar as arestas no grafo
     tupla = ()
-    global arestas
     for i in range(0, len(vertices), 2):
         tupla = (vertices[i], vertices[i+1])
         arestas.append(tupla)
@@ -154,6 +153,27 @@ def criar_grafo():
     print 'Grafo criado com sucesso!'
     plot(g, layout=layout)
 
+
+# ------------------------------------------------------------FUNCOES-DOS-ALGORITMOS-----------------------------------------------
+# descobrir os vizinhos de um vertice e salvar na variavel adjacentes
+def vizinhos(arestas, vertice, primeira_vez = False):
+    aux = []
+    predecessor = {}
+    adjacentes = {}
+    for i in range(len(arestas)):
+        for j in range(2):
+            if(arestas[i][j] == vertice):
+                if(j == 1):
+                    predecessor[arestas[i][0]] = arestas[i]
+                    aux.append(arestas[i])
+                elif (j == 0):
+                    aux.append(arestas[i])
+                    predecessor[arestas[i][1]] = arestas[i]
+    adjacentes[vertice] = aux
+    if (primeira_vez == True):
+        return predecessor, adjacentes
+    if (primeira_vez == False):
+        return adjacentes
 # ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
 def dijkstra():
     global g
@@ -165,6 +185,8 @@ def dijkstra():
     custo = {}
     menor_custo = {}
     adjacentes = {}
+    no_inicial = ''
+    no_final = ''
 
     # mensagem de boas vindas / relembrar quais vertices existem no grafo
     print '\nVoce selecionou o algoritmo de DIJKSTRA\nA seguir o nome dos vertices do seu grafo:\nV = {',
@@ -190,40 +212,163 @@ def dijkstra():
 
     # inicializando o dijkstra
     v_visitados.append(no_inicial)
-    predecessor[no_inicial] = '0'
     menor_custo[no_inicial] = 0
     for i in range(len(arestas)):
         custo[arestas[i]] = pesos[i]
+    predecessor, adjacentes =  vizinhos(arestas, no_inicial, True)
+    dict = {}
+    for v in vertices:
+        if (v not in predecessor) and (v != no_inicial):
+            menor_custo[v] = 999
+        if v in predecessor:
+            menor_custo[v] = custo[predecessor[v]]
 
-    # descobrir os vizinhos do vertice raiz
+    # salva em adjacentes todas as arestas que sao adjacentes em cada vertice
+    for v in vertices:
+        dict = vizinhos(arestas, v)
+        adjacentes.update(dict)
+   
+#    print 'ANTES DO DIJKSTRA'
+#    print predecessor
+#    print adjacentes
+#    print menor_custo
+#    print '\n'
+
+    # agora comecando de verdade o algoritmo
+    predecessor_aux = {}
+    falta_vertice = True
+    while True:
+        for p in predecessor:
+            for a in adjacentes[p]:
+                if (a != predecessor[p]):
+                    for tupla in a:
+                        if (tupla != p):
+                            if ((menor_custo[p] + custo[a]) < menor_custo[tupla]):
+                                aux =  menor_custo[p] + custo[a]
+                                aux2 = aux%(int(aux))
+                                if ((aux2 > 0.09) and (aux2 < 0.1)):
+                                    aux = int(aux) + 0.1
+                                elif (aux2 < 0.009): 
+                                    aux = int(aux)
+                                menor_custo[tupla] = aux
+                                predecessor_aux[tupla] = a
+        predecessor.update(predecessor_aux)
+        falta_vertice = False
+        for v in vertices:
+            if v not in predecessor:
+                if(v != no_inicial):
+                    falta_vertice = True
+        if falta_vertice == False:
+            break
+#    print 'DEPOIS DO DIJKSTRA'
+#    print predecessor
+#    print adjacentes
+#    print menor_custo
+#    print '\n'
+   
+    # printar na tela o menor caminho e o menor custo
     aux = []
-    for i in range(len(arestas)):
-        for j in range(2):
-            if(arestas[i][j] == no_inicial):
-                if(j == 1):
-                    predecessor[arestas[i][0]] = no_inicial
-                    aux.append(arestas[i][0])
-                elif (j == 0):
-                    aux.append(arestas[i][1])
-                    predecessor[arestas[i][1]] = no_inicial
-    adjacentes[no_inicial] = aux
+    cont = 0
+    cabou = False
+    print 'O menor caminho entre ' + no_inicial + ' e ' + no_final + ' eh: ',
+    aux.append(no_final)
+    while cabou == False:
+        for tupla in predecessor[aux[cont]]:
+            if (tupla == no_inicial):
+                cabou = True
+            if (tupla != aux[cont]):
+                aux.append(tupla)
+                a = cont + 1
+        cont = a
+    aux = aux[::-1]
+                
+    for i in range(len(aux)):
+        if (i == (len(aux)-1)):
+            print aux[i]
+        else:
+            print aux[i] + ' -> ',
+    print 'Com o custo total de: ' + str(menor_custo[no_final])
+    print 'A seguir a arvore de caminho minimo criada pelo DIJKSTRA:'
 
-    print adjacentes
-
+    # printar arvore criada para o dijkstra
+    t = Graph()
+    t.add_vertices(len(vertices))
+    arestas_final = []
+    lista = []
+    for p in predecessor:
+        arestas_final.append(predecessor[p])
+        lista.append(custo[predecessor[p]])
+    t.vs["name"] = vertices
+    t.add_edges(arestas_final)
+    t.es["weight"] = lista
+    t.vs["label"] = t.vs["name"]
+    t.es["label"] = t.es["weight"]
+    cont = 0
+    for v in vertices:
+        if(v == no_inicial):
+            break
+        cont = cont + 1
+    lista = []
+    lista.append(cont)
+    layout = t.layout("tree", root = lista)
+    plot(t, layout=layout)
 
 #g.vcount()
 #g.ecount()
 
+# o algoritmo usado na spanning tree foi o de Kruskal
+def spanning_tree():
+    global g
+    global vertices
+    global arestas
+    global pesos
+    antes = {}
+    depois = {}
+    arestas2 = []
+    pesos2 = []
+    
+    print 'Voce selecionou o algoritmo de SPANNING TREE\nA partir do seu grafo, sera construida uma arvore minima:'
+    print 'VERTICES: ' + str(vertices)
+    print 'ARESTAS: ' + str(arestas)
+    print 'PESOS: ' + str(pesos)
 
+    for i in range(len(vertices)):
+        antes[arestas[i]] = pesos[i]
+    print antes
+    menor = pesos
+    menor.sort()
+    arestas2.append
+'''
+    t = Graph()
+    t.add_vertices(len(vertices))
+    for p in predecessor:
+        arestas_final.append(predecessor[p])
+        lista.append(custo[predecessor[p]])
+    t.vs["name"] = vertices
+    t.add_edges(arestas_final)
+    t.es["weight"] = lista
+    t.vs["label"] = t.vs["name"]
+    t.es["label"] = t.es["weight"]
+    cont = 0
+    for v in vertices:
+        if(v == no_inicial):
+            break
+        cont = cont + 1
+    lista = []
+    lista.append(cont)
+    layout = t.layout("tree", root = lista)
+    plot(t, layout=layout)
+'''
 
 # ----------------------------------------------------------------------MAIN-----------------------------------------------------
 def main():
-    global n
     menu()
     while (n != 5):
         criar_grafo()
         if (n == 1):
             dijkstra()
+        elif n == 4:
+            spanning_tree()
         menu(False)
 
 if __name__ == "__main__":
