@@ -155,6 +155,19 @@ def criar_grafo():
 
 
 # ------------------------------------------------------------FUNCOES-DOS-ALGORITMOS-----------------------------------------------
+
+# caso o professor queira checar o recultado do algoritmo alguma outra hora, eh possivel salvar os resultados gerados 
+def salvar(grafo, nome_do_arquivo, layout_do_grafo, raiz = []):
+    x = raw_input('O senhor gostaria de salvar o resultado que o programa acabou de mostrar? (s/n)\n')
+    if x.lower() == 's':
+        if not raiz:
+            plot(grafo, nome_do_arquivo, layout = layout_do_grafo)
+        else: 
+            plot(grafo, nome_do_arquivo, layout = layout_do_grafo, root = raiz)
+
+        print 'Arquivo salvo com sucesso!\nNome do arquivo: ' + nome_do_arquivo + '\n'
+
+
 # descobrir os vizinhos de um vertice e salvar na variavel adjacentes
 def vizinhos(arestas, vertice, primeira_vez = False):
     aux = []
@@ -174,40 +187,6 @@ def vizinhos(arestas, vertice, primeira_vez = False):
         return predecessor, adjacentes
     if (primeira_vez == False):
         return adjacentes
-
-# funcao que checa se ha ciclo fechado 
-def checar_ciclos(arestas, vertices):
-    tem_ciclo = False
-    vizinhos = {} # vertice: arestas vizinhas deste vertice
-    loop = False
-    cont = 0
-
-    # loop para se adicionar os vizinho de todos os vertices no dicionario "vizinhos"
-    while cont < len(vertices):
-        lista = []
-        for a in arestas:
-            if vertices[cont] in a:
-                lista.append(a)
-        vizinhos[vertices[cont]] = lista
-        cont = cont + 1
-
-    for v in vizinhos:
-        for a in vizinhos[v]:
-            cont = 0
-            loop = True
-            lista = []
-            lista2 = []
-            lista.append(a)
-            lista2.append(v)
-            while loop == True:
-                for i in range(2):
-                    if(lista2[cont] != lista[cont][i]):
-                        lista.append(lista[cont][i])
-
-                cont = cont + 1
-
-
-    return tem_ciclo
 
 # ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
 def dijkstra():
@@ -263,12 +242,6 @@ def dijkstra():
         dict = vizinhos(arestas, v)
         adjacentes.update(dict)
    
-#    print 'ANTES DO DIJKSTRA'
-#    print predecessor
-#    print adjacentes
-#    print menor_custo
-#    print '\n'
-
     # agora comecando de verdade o algoritmo
     predecessor_aux = {}
     falta_vertice = True
@@ -295,11 +268,6 @@ def dijkstra():
                     falta_vertice = True
         if falta_vertice == False:
             break
-#    print 'DEPOIS DO DIJKSTRA'
-#    print predecessor
-#    print adjacentes
-#    print menor_custo
-#    print '\n'
    
     # printar na tela o menor caminho e o menor custo
     aux = []
@@ -347,30 +315,20 @@ def dijkstra():
     lista.append(cont)
     layout = t.layout("tree", root = lista)
     plot(t, layout=layout)
-
-#g.vcount()
-#g.ecount()
+    salvar(t, 'dijkstra.png', 'tree', lista)
 
 # o algoritmo usado na spanning tree foi o de Kruskal
 def spanning_tree():
-    global g
     global vertices
     global arestas
     global pesos
     antes = {} # aresta: peso
-    depois = {}
-    arestas2 = []
-    pesos2 = []
     
-    print 'Voce selecionou o algoritmo de SPANNING TREE\nA partir do seu grafo, sera construida uma arvore minima:'
-    print 'VERTICES: ' + str(vertices)
-    print 'ARESTAS: ' + str(arestas)
-    print 'PESOS: ' + str(pesos)
+    print '\nBem vindo ao algoritmo do SPANNING TREE\nIremos gerar uma arvore de custo minimo a partir do grafo que voce escolheu'
 
-    # ordenar os pesos em ordem crescente e adicionar as 2 primeiras arestas na arvore final
+    # ordenar os pesos em ordem crescente  
     for i in range(len(arestas)):
         antes[arestas[i]] = pesos[i]
-    print antes
     menor_pesos = pesos
     menor_pesos.sort()
     menor_arestas = []
@@ -378,56 +336,44 @@ def spanning_tree():
         for a in arestas:
             if(antes[a] == p):
                 menor_arestas.append(a)
-    for i in range(2):
-        arestas2.append(menor_arestas[i])
-        pesos2.append(menor_pesos[i])
 
-    # comecar o algoritmo de kruskal
-    cabou = False
-    cont = 2
-    while cabou == False:
-        lista = []
-        arestas2.append(menor_arestas[cont])
-        n_arestas = len(arestas2)
-        for i in range(len(arestas2)):
-            for j in range(2):
-                lista.append(arestas2[i][j])
-        lista2 = []
-        for v in lista:
-            if v not in lista2:
-                lista2.append(v)
-        n_vertices = len(lista2)
-        graus = [0]*(len(lista2))
-        for i in range(len(lista2)):
-            for j in range(len(lista)):
-                if lista[j] == lista2[i]:
-                    graus[lista2[i]] = graus[lista2[i]] + 1
-        
-        
-
-
-'''
+    # inicializando o grafo DE TESTES
     t = Graph()
     t.add_vertices(len(vertices))
-    for p in predecessor:
-        arestas_final.append(predecessor[p])
-        lista.append(custo[predecessor[p]])
     t.vs["name"] = vertices
-    t.add_edges(arestas_final)
-    t.es["weight"] = lista
+
+# IMPLEMENTAR FUNCAO AQUI QUE RECEBA UM NO CENTRAL
+
+    # comecar o algoritmo de kruskal
+    aux = menor_arestas
+    aux2 = menor_pesos
+    cont = 0
+    n_arestas = 0
+    while (n_arestas < (len(vertices)-1)):
+        lista = []
+        lista.append(aux[cont])
+        t.add_edges(lista)
+        if (t.cohesion() > 1):
+            t.delete_edges(lista)
+            del aux[cont]
+            del aux2[cont]
+        else:
+            cont = cont + 1
+            n_arestas = n_arestas + 1
+
+    # inicializando o grafo FINAL e salvando arquivo
+    t.es["weight"] = aux2
     t.vs["label"] = t.vs["name"]
     t.es["label"] = t.es["weight"]
-    cont = 0
-    for v in vertices:
-        if(v == no_inicial):
-            break
-        cont = cont + 1
-    lista = []
-    lista.append(cont)
-    layout = t.layout("tree", root = lista)
-    plot(t, layout=layout)
-'''
+    print 'A seguir a sua arvore gerada a partir do spanning tree algorithm!'
+    plot(t, layout = "kk")
+    salvar(t, "spanning_tree.png", "kk")
 
+# algoritmo que constroi arvore a partir dos menores caminhos entre os vertices
+def rpf():
+
+
+    salvar(t, "rpf.png", "tree")
 # ----------------------------------------------------------------------MAIN-----------------------------------------------------
 def main():
     menu()
@@ -435,6 +381,8 @@ def main():
         criar_grafo()
         if (n == 1):
             dijkstra()
+        elif n == 3:
+            rpf()
         elif n == 4:
             spanning_tree()
         menu(False)
