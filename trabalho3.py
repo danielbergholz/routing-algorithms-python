@@ -174,6 +174,41 @@ def vizinhos(arestas, vertice, primeira_vez = False):
         return predecessor, adjacentes
     if (primeira_vez == False):
         return adjacentes
+
+# funcao que checa se ha ciclo fechado 
+def checar_ciclos(arestas, vertices):
+    tem_ciclo = False
+    vizinhos = {} # vertice: arestas vizinhas deste vertice
+    loop = False
+    cont = 0
+
+    # loop para se adicionar os vizinho de todos os vertices no dicionario "vizinhos"
+    while cont < len(vertices):
+        lista = []
+        for a in arestas:
+            if vertices[cont] in a:
+                lista.append(a)
+        vizinhos[vertices[cont]] = lista
+        cont = cont + 1
+
+    for v in vizinhos:
+        for a in vizinhos[v]:
+            cont = 0
+            loop = True
+            lista = []
+            lista2 = []
+            lista.append(a)
+            lista2.append(v)
+            while loop == True:
+                for i in range(2):
+                    if(lista2[cont] != lista[cont][i]):
+                        lista.append(lista[cont][i])
+
+                cont = cont + 1
+
+
+    return tem_ciclo
+
 # ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
 def dijkstra():
     global g
@@ -322,7 +357,7 @@ def spanning_tree():
     global vertices
     global arestas
     global pesos
-    antes = {}
+    antes = {} # aresta: peso
     depois = {}
     arestas2 = []
     pesos2 = []
@@ -332,12 +367,45 @@ def spanning_tree():
     print 'ARESTAS: ' + str(arestas)
     print 'PESOS: ' + str(pesos)
 
-    for i in range(len(vertices)):
+    # ordenar os pesos em ordem crescente e adicionar as 2 primeiras arestas na arvore final
+    for i in range(len(arestas)):
         antes[arestas[i]] = pesos[i]
     print antes
-    menor = pesos
-    menor.sort()
-    arestas2.append
+    menor_pesos = pesos
+    menor_pesos.sort()
+    menor_arestas = []
+    for p in menor_pesos:
+        for a in arestas:
+            if(antes[a] == p):
+                menor_arestas.append(a)
+    for i in range(2):
+        arestas2.append(menor_arestas[i])
+        pesos2.append(menor_pesos[i])
+
+    # comecar o algoritmo de kruskal
+    cabou = False
+    cont = 2
+    while cabou == False:
+        lista = []
+        arestas2.append(menor_arestas[cont])
+        n_arestas = len(arestas2)
+        for i in range(len(arestas2)):
+            for j in range(2):
+                lista.append(arestas2[i][j])
+        lista2 = []
+        for v in lista:
+            if v not in lista2:
+                lista2.append(v)
+        n_vertices = len(lista2)
+        graus = [0]*(len(lista2))
+        for i in range(len(lista2)):
+            for j in range(len(lista)):
+                if lista[j] == lista2[i]:
+                    graus[lista2[i]] = graus[lista2[i]] + 1
+        
+        
+
+
 '''
     t = Graph()
     t.add_vertices(len(vertices))
