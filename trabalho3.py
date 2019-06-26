@@ -189,7 +189,8 @@ def vizinhos(arestas, vertice, primeira_vez = False):
         return adjacentes
 
 # ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
-def dijkstra():
+# caso queira, pode retornar a arvore gerada pelo dijkstra
+def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False): # DIJKSTRA --------------------------------------
     global g
     global vertices
     global arestas
@@ -199,30 +200,31 @@ def dijkstra():
     custo = {}
     menor_custo = {}
     adjacentes = {}
-    no_inicial = ''
-    no_final = ''
 
     # mensagem de boas vindas / relembrar quais vertices existem no grafo
-    print '\nVoce selecionou o algoritmo de DIJKSTRA\nA seguir o nome dos vertices do seu grafo:\nV = {',
-    for i in range(len(vertices)):
-        if (i < len(vertices)-1):
-            print vertices[i] + ', ',
-        else:
-            print vertices[i] + ' }'
+    if quer_somente_o_resultado == False:
+        no_inicial = ''
+        no_final = ''
+        print '\nVoce selecionou o algoritmo de DIJKSTRA\nA seguir o nome dos vertices do seu grafo:\nV = {',
+        for i in range(len(vertices)):
+            if (i < len(vertices)-1):
+                print vertices[i] + ', ',
+            else:
+                print vertices[i] + ' }'
 
     # loop para selecionar vertice raiz e destino
-    while True:
-        no_inicial = raw_input('Qual sera o seu no inicial(Raiz)?\n')
-        no_final = raw_input('E o seu no final?\n')
-        if ((no_inicial not in vertices) or (no_final not in vertices)):
-            print 'Por favor, digite um vertice que realmente exista no grafo\nA seguir os vertices do seu grafo:\nV = {',
-            for i in range(len(vertices)):
-                if (i < len(vertices)-1):
-                    print vertices[i] + ', ',
-                else:
-                    print vertices[i] + ' }'
-        else:
-            break
+        while True:
+            no_inicial = raw_input('Qual sera o seu no inicial(Raiz)?\n')
+            no_final = raw_input('E o seu no final?\n')
+            if ((no_inicial not in vertices) or (no_final not in vertices)):
+                print 'Por favor, digite um vertice que realmente exista no grafo\nA seguir os vertices do seu grafo:\nV = {',
+                for i in range(len(vertices)):
+                    if (i < len(vertices)-1):
+                        print vertices[i] + ', ',
+                    else:
+                        print vertices[i] + ' }'
+            else:
+                break
 
     # inicializando o dijkstra
     v_visitados.append(no_inicial)
@@ -268,12 +270,13 @@ def dijkstra():
                     falta_vertice = True
         if falta_vertice == False:
             break
-   
+
     # printar na tela o menor caminho e o menor custo
     aux = []
     cont = 0
     cabou = False
-    print 'O menor caminho entre ' + no_inicial + ' e ' + no_final + ' eh: ',
+    if quer_somente_o_resultado == False:
+        print 'O menor caminho entre ' + no_inicial + ' e ' + no_final + ' eh: ',
     aux.append(no_final)
     while cabou == False:
         for tupla in predecessor[aux[cont]]:
@@ -284,14 +287,15 @@ def dijkstra():
                 a = cont + 1
         cont = a
     aux = aux[::-1]
-                
-    for i in range(len(aux)):
-        if (i == (len(aux)-1)):
-            print aux[i]
-        else:
-            print aux[i] + ' -> ',
-    print 'Com o custo total de: ' + str(menor_custo[no_final])
-    print 'A seguir a arvore de caminho minimo criada pelo DIJKSTRA:'
+
+    if quer_somente_o_resultado == False:
+        for i in range(len(aux)):
+            if (i == (len(aux)-1)):
+                print aux[i]
+            else:
+                print aux[i] + ' -> ',
+        print 'Com o custo total de: ' + str(menor_custo[no_final])
+        print 'A seguir a arvore de caminho minimo criada pelo DIJKSTRA:'
 
     # printar arvore criada para o dijkstra
     t = Graph()
@@ -299,8 +303,13 @@ def dijkstra():
     arestas_final = []
     lista = []
     for p in predecessor:
-        arestas_final.append(predecessor[p])
-        lista.append(custo[predecessor[p]])
+        if quer_somente_o_resultado == False:
+            arestas_final.append(predecessor[p])
+            lista.append(custo[predecessor[p]])
+        elif quer_somente_o_resultado == True:
+            if p in aux:
+                arestas_final.append(predecessor[p])
+                lista.append(custo[predecessor[p]])
     t.vs["name"] = vertices
     t.add_edges(arestas_final)
     t.es["weight"] = lista
@@ -314,17 +323,30 @@ def dijkstra():
     lista = []
     lista.append(cont)
     layout = t.layout("tree", root = lista)
-    plot(t, layout=layout)
-    salvar(t, 'dijkstra.png', 'tree', lista)
+    if quer_somente_o_resultado == False:
+        plot(t, layout=layout)
+        salvar(t, 'dijkstra.png', 'tree', lista)
+    else:
+        return t
 
 # o algoritmo usado na spanning tree foi o de Kruskal
-def spanning_tree():
+def spanning_tree(): # SPANNING TREE --------------------------------------------------------------------------------------------
     global vertices
     global arestas
     global pesos
     antes = {} # aresta: peso
     
     print '\nBem vindo ao algoritmo do SPANNING TREE\nIremos gerar uma arvore de custo minimo a partir do grafo que voce escolheu'
+    v_raiz = ['kk eae men']
+    while v_raiz not in vertices:
+        if v_raiz != ['kk eae men']:
+            print 'Por favor, digite um vertice valido\nA seguir os vertices do seu grafo:\nV = { ',
+            for v in vertices:
+                if v != vertices[-1]:
+                    print v + ', ',
+                else:
+                    print v + ' }'
+        v_raiz = raw_input('Qual sera o seu vertice raiz?\n')
 
     # ordenar os pesos em ordem crescente  
     for i in range(len(arestas)):
@@ -341,8 +363,21 @@ def spanning_tree():
     t = Graph()
     t.add_vertices(len(vertices))
     t.vs["name"] = vertices
-
-# IMPLEMENTAR FUNCAO AQUI QUE RECEBA UM NO CENTRAL
+    
+    # ja adicionar as arestas do vertice raiz no grafo
+    aux3 = []
+    aux4 = []
+    aux = t.neighbors(v_raiz)
+    for i in range(len(menor_arestas)):
+        for a in menor_arestas[i]:
+            if a in aux:
+                aux3.append(menor_arestas[i])
+                aux4.append(menor_pesos[i])
+                del menor_arestas[i]
+                del menor_pesos[i]
+    for i in range(len(aux3)):
+        menor_arestas.insert(0, aux3[i])
+        menor_pesos.insert(0, aux4[i])
 
     # comecar o algoritmo de kruskal
     aux = menor_arestas
@@ -365,15 +400,92 @@ def spanning_tree():
     t.es["weight"] = aux2
     t.vs["label"] = t.vs["name"]
     t.es["label"] = t.es["weight"]
-    print 'A seguir a sua arvore gerada a partir do spanning tree algorithm!'
+    print 'A seguir a sua arvore gerada a partir do Spanning Tree algorithm!'
     plot(t, layout = "kk")
     salvar(t, "spanning_tree.png", "kk")
 
 # algoritmo que constroi arvore a partir dos menores caminhos entre os vertices
-def rpf():
+def rpf(): # RPF ----------------------------------------------------------------------------------------------------------------
+    global g
+    global vertices
+    global arestas
+    global pesos
+    custo = {} # aresta: peso
+    arestas2 = []
+
+    # criar o dicionario do custo
+    for i in range(len(arestas)):
+        custo[arestas[i]] = pesos[i]
+        custo[arestas[i][::-1]] = pesos[i]
+
+    # loop para selecionar vertice raiz e destino
+    print '\nBem vindo ao algoritmo RPF'
+    while True:
+        print 'A seguir os vertices do seu grafo:\nV = {',
+        for i in range(len(vertices)):
+            if (i < len(vertices)-1):
+                print vertices[i] + ', ',
+            else:
+                print vertices[i] + ' }'
+        no_inicial = raw_input('Qual sera o seu no inicial(Raiz)?\n')
+        if no_inicial not in vertices:
+            print 'Por favor, digite um vertice que realmente exista no grafo\n'
+        else:
+            break
+    grafos = []
+    for v in vertices:
+        if v != no_inicial:
+            grafos.append(dijkstra(no_inicial, v, True))
+
+    aux = Graph()
+    for graf in grafos:
+        aux = aux + graf
+    print 'A seguir a sua arvore gerada a partir do Reverse Path Fowarding!'
+    aux.vs["name"] = vertices
+    aux.vs["label"] = aux.vs["name"]
+
+    # deletar todos os vertices que vieram sem aresta: degree = 0
+    cont = []
+    for i in range(len(aux.vs)):
+        if aux.degree(aux.vs[i]) == 0:
+            cont.append(i)
+    i = len(cont) - 1
+    while i >= 0:
+        aux.delete_vertices(cont[i])
+        i = i -1
 
 
-    salvar(t, "rpf.png", "tree")
+    # deletar todos os vertices que sao o no_inicial
+    a = []
+    cont = []
+    for i in range(len(aux.vs)):
+        if aux.vs[i]["name"] == no_inicial:
+            cont.append(i)
+    i = len(cont) - 1
+    while i >= 0:
+        a.append(aux.incident(cont[i])[0])
+        aux.delete_vertices(cont[i])
+        i = i -1
+
+    # criar a arvore final a partir de tudo isso
+    g = Graph()
+    g = g or aux
+    g.add_vertices(no_inicial)
+    g.vs[g.vcount()-1]["label"]=g.vs[g.vcount()-1]["name"]
+    for azin in a:
+        g.add_edges([(azin, no_inicial)])    
+    for e in g.es:
+        arestas2.append((g.vs[e.source]["name"], g.vs[e.target]["name"]))
+    pesos2 = []
+    for a in arestas2:
+        pesos2.append(custo[a])
+    g.es["weight"] = pesos2
+    g.es["label"] = g.es["weight"]
+    raiz = []
+    raiz.append(no_inicial)
+    print 'A arvore a seguir mostra o menor caminho entre ' + no_inicial + ' e todos os outros vertices do grafo que o senhor passou'
+    plot(g, layout = "tree", root = raiz)
+    salvar(g, "rpf.png", "tree", raiz)
 # ----------------------------------------------------------------------MAIN-----------------------------------------------------
 def main():
     menu()
