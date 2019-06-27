@@ -38,7 +38,7 @@ def menu(primeira_vez=True):
     if (primeira_vez == True):
         os.system('clear')
         print 'Seja bem vindo ao meu programa que simula grafos\n'
-    print 'A seguir os algoritmos disponiveis:\n'
+    print '\nA SEGUIR OS ALGORITMOS DISPONIVEIS:\n'
     print '1) Dijkstra\n2) Bellman-Ford\n3) RPF\n4) Spanning Tree\n5) SAIR'
     n = input('Por favor, selecione um algoritmo que vc gostaria de executar:\n')
     while (n < 1 or n > 5):
@@ -190,7 +190,7 @@ def vizinhos(arestas, vertice, primeira_vez = False):
 
 # ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
 # caso queira, pode retornar a arvore gerada pelo dijkstra
-def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False): # DIJKSTRA --------------------------------------
+def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False, so_mensagem = False): # DIJKSTRA -----------------
     global g
     global vertices
     global arestas
@@ -275,7 +275,7 @@ def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False): 
     aux = []
     cont = 0
     cabou = False
-    if quer_somente_o_resultado == False:
+    if so_mensagem == True or (quer_somente_o_resultado == False and so_mensagem == False):
         print 'O menor caminho entre ' + no_inicial + ' e ' + no_final + ' eh: ',
     aux.append(no_final)
     while cabou == False:
@@ -288,14 +288,15 @@ def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False): 
         cont = a
     aux = aux[::-1]
 
-    if quer_somente_o_resultado == False:
+    if so_mensagem == True or (quer_somente_o_resultado == False and so_mensagem == False):
         for i in range(len(aux)):
             if (i == (len(aux)-1)):
                 print aux[i]
             else:
                 print aux[i] + ' -> ',
         print 'Com o custo total de: ' + str(menor_custo[no_final])
-        print 'A seguir a arvore de caminho minimo criada pelo DIJKSTRA:'
+        if (quer_somente_o_resultado == False and so_mensagem == False):
+            print 'A seguir a arvore de caminho minimo criada pelo DIJKSTRA:'
 
     # printar arvore criada para o dijkstra
     t = Graph()
@@ -326,7 +327,7 @@ def dijkstra(no_inicial = '', no_final = '', quer_somente_o_resultado = False): 
     if quer_somente_o_resultado == False:
         plot(t, layout=layout)
         salvar(t, 'dijkstra.png', 'tree', lista)
-    else:
+    elif quer_somente_o_resultado == True and so_mensagem == False:
         return t
 
 # o algoritmo usado na spanning tree foi o de Kruskal
@@ -483,7 +484,13 @@ def rpf(): # RPF ---------------------------------------------------------------
     g.es["label"] = g.es["weight"]
     raiz = []
     raiz.append(no_inicial)
-    print 'A arvore a seguir mostra o menor caminho entre ' + no_inicial + ' e todos os outros vertices do grafo que o senhor passou'
+    print 'A arvore a seguir mostra o menor caminho entre ' + no_inicial + ' e todos os outros vertices do grafo'
+
+    # printar na tela o menor caminho entre todos os vertices
+    for v in vertices:
+        if v != no_inicial:
+            dijkstra(no_inicial, v, True, True)
+
     plot(g, layout = "tree", root = raiz)
     salvar(g, "rpf.png", "tree", raiz)
 # ----------------------------------------------------------------------MAIN-----------------------------------------------------
