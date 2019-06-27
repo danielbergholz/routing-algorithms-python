@@ -3,6 +3,9 @@
 # DANIEL GOBBI BERGHOLZ 16/0004551
 # TRABALHO 3 FUNDAMENTOS DE REDES 1
 
+# o codigo a seguir foi feito sob o efeito de muita pressao e cafeina
+# nao recomendo mexer em nada, so deus sabe como isso tudo aqui funciona
+
 from igraph import *
 import os, re
 
@@ -10,7 +13,6 @@ import os, re
 n = 0
 
 # variaveis globais do grafo
-
 g = Graph() 
 vertices = []
 arestas = []
@@ -500,6 +502,109 @@ def rpf(): # RPF ---------------------------------------------------------------
 
     plot(g, layout = "tree", root = raiz)
     salvar(g, "rpf.png", "tree", raiz)
+
+# ----------------------------------------------------------------------ALGORITMOS-----------------------------------------------
+def bellman_ford(): # BELLMAN-FORD ----------------------------------------------------------------------------------------------
+    global g # Graph
+    global vertices # string 
+    global arestas # (vertice1, vertice2)
+    global pesos # int 
+    custo = {} # aresta: peso
+    vizinhos = {} # vertice: [aresta1, aresta2 ...]
+    matriz = [] # matriz do algoritmo de bellman-ford 
+    indent = {} # int : vertice / indentificador do vertice
+
+    print '\nBem vindo ao algoritmo Bellman-Ford!'
+    print 'A seguir sera gerada uma tabela que contem o caminho minimo entre cada vertice'
+
+    # criar o dicionario do custo
+    for i in range(len(arestas)):
+        custo[arestas[i]] = pesos[i]
+        #custo[arestas[i][::-1]] = pesos[i]
+
+    # adicionar os vizinhos de cada vertice na variavel "vizinhos"
+    for v in vertices:
+        lista = []
+        for a in arestas:
+            for i in range(2):
+                if a[i] == v:
+                    lista.append(a)
+        vizinhos[v] = lista
+
+    # achar o numero (indentificador) de cada vertice e salvar na variavel "indent"
+    # na moral que esse pedaco de codigo nao serve pra absolutamente nada 
+    cont = 0
+    for gzin in g.vs["name"]:
+        for v in vertices:
+            if v == gzin:
+                indent[cont] = v
+        cont = cont + 1
+    
+    # preenchendo a matriz pela primeira vez / com os custos dos vizinhos somente
+    for i in range(g.vcount()):
+        linha = []
+        for j in range(g.vcount()):
+            if j in g.neighbors(i):
+                for a in vizinhos[indent[i]]:
+                    if g.vs["name"][j] in a:
+                        linha.append(custo[a])
+            elif j == i:
+                linha.append(0) # o custo so eh zero quando o vertice for ele mesmo
+            else:
+                linha.append(999) # 999 = INFINITO
+        matriz.append(linha)
+
+    # o algoritmo propriamente dito
+    cabou = False
+    while cabou == False: 
+        cabou = True
+        for i in range(g.vcount()):
+            for j in range(g.vcount()): # percorrer toda a matriz
+                if matriz[i][j] != 0: # se != 0, significa que o elemento eh vizinho do vertice
+                    D = []
+                    D.append(matriz[i][j]) # adicionar custo deste vizinho
+                    offset = 0
+                    while offset < g.vcount():
+                        if (matriz[offset][j] != 0 and matriz[offset][j] != 999):
+                            if matriz[i][offset] != 0 and matriz[i][offset] != 999:
+                                D.append(matriz[i][offset] + matriz[offset][j])
+                        offset = offset +1
+                    D_min = min(D)
+                    if D_min < matriz[i][j]:
+                        matriz[i][j] = D_min
+                        cabou = False
+
+    # printando em formato de tabela
+    print '\nTABELA DE CAMINHOS MINIMOS\n'
+    print '    | ',
+    for v in vertices:
+        print v + '  | ',
+    print ''
+    print '-----------------------------------------------'
+    cont = 0
+    for M in matriz:
+        print vertices[cont] + '  | ',
+        for m in M:
+            x = str(m)
+            if len(x) == 2:
+                print x + '  | ',
+            elif len(x) == 3:
+                print x + ' | ',
+            elif len(x) == 1:
+                print x + '   | ',
+        print ''
+        cont = cont + 1
+
+    '''
+    # printar na tela o menor caminho entre todos os vertices
+    for v1 in vertices:
+        for v in vertices:
+            if v != v1:
+                dijkstra(v1, v, True, True)
+    print 'A seguir a tabela final de caminhos minimos desta rede:\n'
+    plot(g, layout = "tree", root = raiz)
+    '''
+
 # ----------------------------------------------------------------------MAIN-----------------------------------------------------
 def main():
     menu()
@@ -507,6 +612,8 @@ def main():
         criar_grafo()
         if (n == 1):
             dijkstra()
+        elif n == 2:
+            bellman_ford()
         elif n == 3:
             rpf()
         elif n == 4:
