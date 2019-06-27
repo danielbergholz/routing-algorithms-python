@@ -401,7 +401,14 @@ def spanning_tree(): # SPANNING TREE -------------------------------------------
     t.es["weight"] = aux2
     t.vs["label"] = t.vs["name"]
     t.es["label"] = t.es["weight"]
+
+    # calculando o custo total da arvore gerada
+    custo_total = 0
+    for tzin in t.es["weight"]:
+        custo_total = custo_total + tzin
+    
     print 'A seguir a sua arvore gerada a partir do Spanning Tree algorithm!'
+    print 'Que tem custo total = ' + str(custo_total)
     plot(t, layout = "kk")
     salvar(t, "spanning_tree.png", "kk")
 
